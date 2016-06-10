@@ -5,6 +5,7 @@
 //  Created by Gorker Alp Malazgirt (-|>/-*-\<|-) on 6/1/16.
 //
 //libraries
+////TODO: replace cout with debug info
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -106,7 +107,7 @@ void GenerateDirectionalPoints(vector<coordinatetype>& carpoints,string car_dire
 double haversine(coordinatetype p1, coordinatetype p2){
   double lat1 = p1.first*PI/180;
   double lat2 = p2.first*PI/180;
-  double lon1 = p2.second*PI/180;
+  double lon1 = p1.second*PI/180;
   double lon2 = p2.second*PI/180;
   double dlon = lon2 - lon1;
   double dlat = lat2 - lat1;
@@ -116,17 +117,17 @@ double haversine(coordinatetype p1, coordinatetype p2){
   return d;
 }
 
+//***to do**
+//add line distance as closest point between
+//
 int main(int argc, const char * argv[]) {
   cout << "Read the map and form the grids!\n";
   string yol = "/Users/gorkeralp/Dropbox/Okul/Research/QPU/kadikoy_yol.json";
   string yol2 = "/Users/gorkeralp/Developer/json_gps/json_gps/newfile.txt";
-  string car = "/Users/gorkeralp/Dropbox/Okul/Research/QPU/gps_data_csv/gps data1.csv";
-  //read map file from user
-  //read car file from user
-  ifstream file(yol2);
-  //read the road data
-  //this is for each
-  //double prevLat=-1;double prevLong=-1;
+  string car = "/Users/gorkeralp/Dropbox/Okul/Research/QPU/gps_data_csv/gpsdata1.csv";
+  fstream file(yol2);
+  //double prevLat=-1;double prevLong=-1; //previous lattitude and longtitude
+  cout<<"Reading Map Data..."<<endl;
   for(string line; getline(file,line ); )
   {
     stringstream ss(line);
@@ -191,9 +192,11 @@ int main(int argc, const char * argv[]) {
     }
   }
   file.close();
+  cout<<"Map Data is Read..."<<endl;
   //read car data
   file.open(car);
   string line; getline(file,line ); //this is for csv signature
+  cout<<"Reading Car Data..."<<endl;
   for(string line; getline(file,line ); )
   {
     stringstream ss(line);
@@ -225,12 +228,17 @@ int main(int argc, const char * argv[]) {
       car_id_to_car_struct.insert(pair<long,st_car_point>(carpoint.mobile_id,carpoint));
     }
   }
+  file.close();
+  cout<<"Car Data is Read..."<<endl;
   //for each car element find the closest point in the map using haversine
   //check direction and form more points
+  //
+  cout<<"Calculating all car routes..."<<endl;
+  file.open("/Users/gorkeralp/Developer/json_gps/json_gps/car_routes.txt", std::fstream::out);
   for (auto& car_id : car_id_to_car_struct) { //each car id
     for (int i=0;i<car_id.second.pointArray.size();i++){ // each location of car
       coordinatetype carpointfromgps = car_id.second.pointArray[i];
-      cout<<carpointfromgps.first<<" "<<carpointfromgps.second<<endl;
+      //cout<<carpointfromgps.first<<" "<<carpointfromgps.second<<endl;
       vector<coordinatetype> generatedcarpoints(3);
       generatedcarpoints[1] = carpointfromgps;
       string direction = car_id.second.directionArray[i];
@@ -281,10 +289,18 @@ int main(int argc, const char * argv[]) {
       }
       unsigned long size = car_id.second.route.size();
       //print car route to file
-      std::cout <<car_id.second.mobile_id <<","<<car_id.second.route[size-1].first<<","<<
-      car_id.second.route[size-1].second<<","<<size<<'\n';
-      //draw the routes
+      ////representation carid,retrieved point,found point, distance, id
+      file <<car_id.second.mobile_id <<","
+      <<car_id.second.pointArray[i].first<<","
+      <<car_id.second.pointArray[i].second<<","
+      <<car_id.second.route[size-1].first<<","<<
+      car_id.second.route[size-1].second<<","
+      <<size<<'\n';
     }
   }
+  file.close();//single fstream
+  cout<<"Car routes are written into \"car_routes.txt\"..."<<endl;
+  cout<<"Thank you!"<<endl;
+  //close the file
   return 0;
 }
