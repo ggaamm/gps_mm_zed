@@ -6,6 +6,7 @@
 //
 //libraries
 ////TODO: replace cout with debug info
+////TODO: add counters for measuring execution
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -115,6 +116,18 @@ double haversine(coordinatetype p1, coordinatetype p2){
   double c = 2 * atan2( sqrt(a), sqrt(1-a) );
   double d = R * c; //where R is the radius of the Earth
   return d;
+}
+
+double distancetolinefrompoint(coordinatetype p1,coordinatetype p2, coordinatetype carpoint) {
+  double lat1 = p1.first;
+  double lat2 = p2.first;
+  double long1 = p1.first;
+  double long2 = p2.first;
+  double carlat = carpoint.first;
+  double carlong = carpoint.second;
+  double dist = abs(((long2-long1)*carlat) - ((lat2-lat1) * carlong) + (lat2*long1) - (long2*lat1));
+  dist /= sqrt(pow(long2-long1,2)+pow(lat2-lat1,2));
+  return dist;
 }
 
 //***to do**
@@ -264,14 +277,23 @@ int main(int argc, const char * argv[]) {
             continue;//no elements in this grid,search in the neighbor point
           for (coordinatetype mappoint : gridpoint->second) //each map point in the grid
           {
+            double dist;
+            for (const auto& prevPoint : coord_to_loc_struct[mappoint].previous_point) {
+              if (prevPoint.first == -1 | prevPoint.second ==-1) {
+                 dist = haversine(generatedcarpoints[j], mappoint); //if prevPoint is not known do haversine
+              }
+              else {
+                dist = distancetolinefrompoint(mappoint,prevPoint,generatedcarpoints[j]);
+              }
+              if (distance[j] > dist) {
+                distance[j] = dist;
+                distanceMap[j] = make_pair(mappoint,dist);
+              }
+            }
             //cout<<"prev point size:"<<coord_to_loc_struct[mappoint].previous_point.size()<<endl;
             //for each prev point, we can calculate line distance as well but of course there won't be previous for
             //all points
-            double dist = haversine(generatedcarpoints[j], mappoint); //we wanna do it for all the three points in a pipeline
-            if (distance[j] > dist) {
-              distance[j] = dist;
-              distanceMap[j] = make_pair(mappoint,dist);
-            }
+            //double dist = haversine(generatedcarpoints[j], mappoint); //we wanna do it for all the three points in a pipeline
           }
         }
       }
