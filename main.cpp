@@ -121,8 +121,8 @@ double haversine(coordinatetype p1, coordinatetype p2){
 double distancetolinefrompoint(coordinatetype p1,coordinatetype p2, coordinatetype carpoint) {
   double lat1 = p1.first;
   double lat2 = p2.first;
-  double long1 = p1.first;
-  double long2 = p2.first;
+  double long1 = p1.second;
+  double long2 = p2.second;
   double carlat = carpoint.first;
   double carlong = carpoint.second;
   double dist = abs(((long2-long1)*carlat) - ((lat2-lat1) * carlong) + (lat2*long1) - (long2*lat1));
@@ -311,7 +311,7 @@ int main(int argc, const char * argv[]) {
       }
       unsigned long size = car_id.second.route.size();
       //print car route to file
-      ////representation carid,retrieved point,found point, distance, id
+      ////representation carid,retrieved point,found point,routenumber
       file <<car_id.second.mobile_id <<","
       <<car_id.second.pointArray[i].first<<","
       <<car_id.second.pointArray[i].second<<","
