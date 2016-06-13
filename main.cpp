@@ -17,8 +17,10 @@
 #include <set>
 #include <math.h>
 #include <cmath>
+
 #define PI 3.14159265
 #define R 6372795.477598
+#define MAXIMUMDISTANCE
 using namespace std;
 static const double minLattitude = 40.95124;
 static const double minLongtitude = 29.01658;
@@ -129,7 +131,6 @@ double distancetolinefrompoint(coordinatetype p1,coordinatetype p2, coordinatety
   dist /= sqrt(pow(long2-long1,2)+pow(lat2-lat1,2));
   return dist;
 }
-
 //***to do**
 //add line distance as closest point between
 //
@@ -280,7 +281,7 @@ int main(int argc, const char * argv[]) {
             double dist;
             for (const auto& prevPoint : coord_to_loc_struct[mappoint].previous_point) {
               if (prevPoint.first == -1 | prevPoint.second ==-1) {
-                 dist = haversine(generatedcarpoints[j], mappoint); //if prevPoint is not known do haversine
+                dist = haversine(generatedcarpoints[j], mappoint); //if prevPoint is not known do haversine
               }
               else {
                 dist = distancetolinefrompoint(mappoint,prevPoint,generatedcarpoints[j]);
@@ -297,27 +298,29 @@ int main(int argc, const char * argv[]) {
           }
         }
       }
-      if(distanceMap[0].first == distanceMap[1].first ) { //all the points are aligned
-        car_id.second.route.push_back(distanceMap[0].first);
+      if (distance[0] <= 30 || distance[1] <= 30 || distance[3] <= 30){
+        if(distanceMap[0].first == distanceMap[1].first ) { //all the points are aligned
+          car_id.second.route.push_back(distanceMap[0].first);
+        }
+        else if(distanceMap[0].first == distanceMap[2].first){
+          car_id.second.route.push_back(distanceMap[0].first);
+        }
+        else if(distanceMap[1].first == distanceMap[2].first){
+          car_id.second.route.push_back(distanceMap[1].first);
+        }
+        else {
+          car_id.second.route.push_back(distanceMap[1].first);
+        }
+        unsigned long size = car_id.second.route.size();
+        //print car route to file
+        ////representation carid,retrieved point,found point,routenumber
+        file <<car_id.second.mobile_id <<","
+        <<car_id.second.pointArray[i].first<<","
+        <<car_id.second.pointArray[i].second<<","
+        <<car_id.second.route[size-1].first<<","<<
+        car_id.second.route[size-1].second<<","
+        <<size<<'\n';
       }
-      else if(distanceMap[0].first == distanceMap[2].first){
-        car_id.second.route.push_back(distanceMap[0].first);
-      }
-      else if(distanceMap[1].first == distanceMap[2].first){
-        car_id.second.route.push_back(distanceMap[1].first);
-      }
-      else {
-        car_id.second.route.push_back(distanceMap[1].first);
-      }
-      unsigned long size = car_id.second.route.size();
-      //print car route to file
-      ////representation carid,retrieved point,found point,routenumber
-      file <<car_id.second.mobile_id <<","
-      <<car_id.second.pointArray[i].first<<","
-      <<car_id.second.pointArray[i].second<<","
-      <<car_id.second.route[size-1].first<<","<<
-      car_id.second.route[size-1].second<<","
-      <<size<<'\n';
     }
   }
   file.close();//single fstream
